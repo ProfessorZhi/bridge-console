@@ -3,3 +3,5 @@ dist/
 __pycache__/
 *.pyc
 bridge-console.local.json
+Bridge Console.exe
+Bridge Console.new.exe
