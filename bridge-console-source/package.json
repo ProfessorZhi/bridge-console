@@ -1,0 +1,10 @@
+{
+  "name": "bridge-console",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local control console for Claude-to-IM, QQ, Feishu, and Happy Codex workdir management.",
+  "scripts": {
+    "start": "node server.mjs"
+  }
+}
