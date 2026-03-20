@@ -25,7 +25,7 @@ cd bridge-console-source
 npm start
 ```
 
-访问：
+访问以下地址：
 
 ```
 http://127.0.0.1:3210
