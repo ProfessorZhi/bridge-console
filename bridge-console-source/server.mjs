@@ -25,7 +25,28 @@ const HAPPY_DAEMON = path.join(HAPPY_HOME, 'daemon.state.json');
 const MANAGER_HOME = path.join(HOME, '.bridge-console');
 const MANAGER_SETTINGS = path.join(MANAGER_HOME, 'settings.json');
 const DEFAULT_CTI_SOURCE = path.join(WORKSPACE_ROOT, 'Claude-to-IM-skill', 'Claude-to-IM-skill-source');
-const HAPPY_CMD = path.join(HOME, 'AppData', 'Roaming', 'npm', 'happy.cmd');
+
+function resolveHappyCommand() {
+  if (process.env.HAPPY_CMD && process.env.HAPPY_CMD.trim()) {
+    return process.env.HAPPY_CMD.trim();
+  }
+  const whereResult = spawnSync('where', ['happy'], {
+    windowsHide: true,
+    encoding: 'utf8'
+  });
+  if (whereResult.status === 0 && typeof whereResult.stdout === 'string') {
+    const first = whereResult.stdout
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .find(Boolean);
+    if (first) {
+      return first;
+    }
+  }
+  return path.join(HOME, 'AppData', 'Roaming', 'npm', 'happy.cmd');
+}
+
+const HAPPY_CMD = resolveHappyCommand();
 
 function loadLocalConfig() {
   try {

@@ -38,9 +38,13 @@ from PySide6.QtWidgets import (
 
 
 HOME = Path.home()
-SOURCE_ROOT = Path(__file__).resolve().parent
+RUNTIME_DIR = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
+SOURCE_ROOT = RUNTIME_DIR.parent if getattr(sys, "frozen", False) and RUNTIME_DIR.name.lower() == "dist" else RUNTIME_DIR
 WORKSPACE_ROOT = SOURCE_ROOT.parent.parent
-LOCAL_CONFIG_PATH = SOURCE_ROOT / "bridge-console.local.json"
+LOCAL_CONFIG_CANDIDATES = [
+    SOURCE_ROOT / "bridge-console.local.json",
+    RUNTIME_DIR / "bridge-console.local.json",
+]
 LEGACY_CTI_HOME = HOME / ".claude-to-im"
 INSTANCE_HOMES = {
     "feishu": HOME / ".claude-to-im-feishu",
@@ -59,10 +63,13 @@ APP_ID = "Develop.BridgeConsole"
 
 
 def load_local_config() -> dict:
-    try:
-        return json.loads(LOCAL_CONFIG_PATH.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
+    for path in LOCAL_CONFIG_CANDIDATES:
+        try:
+            if path.exists():
+                return json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+    return {}
 
 
 def resolve_config_path(value: str | None, fallback: Path) -> Path:

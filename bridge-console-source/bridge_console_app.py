@@ -12,9 +12,13 @@ from tkinter import filedialog, messagebox, ttk
 
 
 HOME = Path.home()
-SOURCE_ROOT = Path(__file__).resolve().parent
+RUNTIME_DIR = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
+SOURCE_ROOT = RUNTIME_DIR.parent if getattr(sys, "frozen", False) and RUNTIME_DIR.name.lower() == "dist" else RUNTIME_DIR
 WORKSPACE_ROOT = SOURCE_ROOT.parent.parent
-LOCAL_CONFIG_PATH = SOURCE_ROOT / "bridge-console.local.json"
+LOCAL_CONFIG_CANDIDATES = [
+    SOURCE_ROOT / "bridge-console.local.json",
+    RUNTIME_DIR / "bridge-console.local.json",
+]
 CTI_HOME = HOME / ".claude-to-im"
 CTI_CONFIG = CTI_HOME / "config.env"
 CTI_STATUS = CTI_HOME / "runtime" / "status.json"
@@ -32,10 +36,13 @@ DEFAULT_CTI_SOURCE = WORKSPACE_ROOT / "Claude-to-IM-skill" / "Claude-to-IM-skill
 
 
 def load_local_config():
-    try:
-        return json.loads(LOCAL_CONFIG_PATH.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
+    for path in LOCAL_CONFIG_CANDIDATES:
+        try:
+            if path.exists():
+                return json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+    return {}
 
 
 def resolve_config_path(value, fallback: Path):
